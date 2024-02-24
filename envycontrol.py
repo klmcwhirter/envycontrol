@@ -214,7 +214,7 @@ RTD3_MODES = [0, 1, 2, 3]
 # end constants definition
 
 
-def graphics_mode_switcher(graphics_mode, user_display_manager, enable_force_comp, coolbits_value, rtd3_value, use_nvidia_current):
+def graphics_mode_switcher(graphics_mode, user_display_manager, enable_force_comp, coolbits_value, rtd3_value, use_nvidia_current, **kwargs):
     print(f"Switching to {graphics_mode} mode")
 
     if graphics_mode == 'integrated':
@@ -572,24 +572,24 @@ def main():
         CachedConfig.delete_cache_file()
         return
     elif args.cache_query:
-        CachedConfig(args).show_cache_file()
+        CachedConfig.show_cache_file()
         return
 
-    with CachedConfig(args).adapter():
-        if args.switch:
-            assert_root()
-            graphics_mode_switcher(args.switch, args.dm,
-                                   args.force_comp, args.coolbits, args.rtd3, args.use_nvidia_current)
-        elif args.reset_sddm:
-            assert_root()
-            create_file(SDDM_XSETUP_PATH, SDDM_XSETUP_CONTENT, True)
-            print('Operation completed successfully')
-        elif args.reset:
-            assert_root()
-            cleanup()
-            CachedConfig.delete_cache_file()
-            rebuild_initramfs()
-            print('Operation completed successfully')
+    if args.switch or args.reset_sddm or args.reset:
+        with CachedConfig(args).adapter() as adapter:
+            if args.switch:
+                assert_root()
+                graphics_mode_switcher(**adapter.app_args)
+            elif args.reset_sddm:
+                assert_root()
+                create_file(SDDM_XSETUP_PATH, SDDM_XSETUP_CONTENT, True)
+                print('Operation completed successfully')
+            elif args.reset:
+                assert_root()
+                cleanup()
+                CachedConfig.delete_cache_file()
+                rebuild_initramfs()
+                print('Operation completed successfully')
 
 
 class CachedConfig:
@@ -613,7 +613,7 @@ class CachedConfig:
         if self.is_hybrid():  # recreate cache file when in hybrid mode
             self.create_cache_file()
 
-        yield  # back to main ...
+        yield self  # back to main ...
 
     def create_cache_file(self):
         if not self.is_hybrid():
@@ -668,7 +668,8 @@ class CachedConfig:
             raise ValueError(
                 'No cache present.Operation requires that the system be in the hybrid Optimus mode')
 
-    def show_cache_file(self):
+    @staticmethod
+    def show_cache_file():
         content = f'ERROR: Could not read {CACHE_FILE_PATH}'
         if os.path.exists(CACHE_FILE_PATH):
             with open(CACHE_FILE_PATH, 'r', encoding='utf-8') as f:
@@ -710,8 +711,8 @@ def get_igpu_bus_pci_bus():
 
 def get_lspci_lines():
     lspci_output = subprocess.check_output(["lspci"]).decode('utf-8')
-    lines = [line for line in lspci_output.splitlines(
-    ) if 'VGA compatible controller' in line or 'Display controller' in line]
+    lines = [line for line in lspci_output.splitlines()
+             if 'VGA compatible controller' in line or 'Display controller' in line]
     return lines
 
 

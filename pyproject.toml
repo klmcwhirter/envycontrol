@@ -1,0 +1,36 @@
+[project]
+name = "envycontrol"
+version = "3.3.2"
+description = "Default template for PDM package"
+authors = [
+    {name = "Victor Bayas", email = "victor@bayas.dev"},
+]
+dependencies = []
+requires-python = ">=3.12"
+readme = "README.md"
+license = {text = "MIT"}
+
+# [build-system]
+# requires = ["setuptools>=61", "wheel"]
+# build-backend = "setuptools.build_meta"
+
+
+[tool.pdm]
+distribution = false
+# distribution = true
+
+[tool.pdm.scripts]
+create_venv = { shell = "pdm venv remove -y in-project; pdm install --prod" }
+install_dev = { shell = "pdm install --dev" }
+clean = { shell = "find . -type d \\( -name __pycache__ -o -name .pytest_cache \\) -exec rm -fr {} \\;" }
+start =  { shell = "sudo python -m envycontrol" }
+test = "pytest -vv"
+
+[tool.pdm.dev-dependencies]
+dev = [
+    "pytest>=8.0.1",
+]
+
+[tool.autopep8]
+max-doc-length = 132
+max_line_length = 132
