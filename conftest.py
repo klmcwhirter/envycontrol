@@ -42,15 +42,14 @@ def pytest_collection_modifyitems(session, config, items):
 
 
 def try_skip(item):
-    marks = [mark for mark in item.own_markers if mark.name in SUPPORTED_OPTIMUS_MODES]
-
-    for mark in marks:
-        mode = mark.name
-        if mode == curr_mode:
+    own_markers = [mark for mark in item.own_markers]
+    if own_markers:
+        modes = [mark.name for mark in own_markers if mark.name in SUPPORTED_OPTIMUS_MODES]
+        if curr_mode in modes:
             # {mode} in force: do not skip mode tests
             pass
         else:
-            skip_mode = pytest.mark.skip(reason=f'needs "Optimus mode"={mode} to run; current_mode={curr_mode}')
+            skip_mode = pytest.mark.skip(reason=f'needs one of "Optimus mode"={modes} to run; current_mode={curr_mode}')
             item.add_marker(skip_mode)
 
     if not is_root():

@@ -17,7 +17,7 @@ def test_mode_is_hybrid():
 def hybrid_files() -> list[str]:
     return [
         MODESET_PATH,
-        UDEV_PM_PATH,
+        # UDEV_PM_PATH,  # only if rtd3
         CACHE_FILE_PATH,
     ]
 
