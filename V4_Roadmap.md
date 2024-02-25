@@ -1,8 +1,17 @@
 # Envycontrol V4 Roadmap
 
-## Items to Consider
-
 > Issues to be created for unnumbered items below.
+
+## Goals
+
+* General technology refresh
+* Automated CI/CD pipeline
+  * including test bed with up to 50% coverage
+* Redesign for ease of customization, system stability assurance
+  * simple enough design for maintainability
+* Address enhancements / bugs from backlog as appropriate
+
+## Items to Consider
 
 ### Project Enhancements
 
@@ -13,7 +22,7 @@
   * At least 50% test coverage (measured with pytest-cov) - enforced via [github action status check](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/collaborating-on-repositories-with-code-quality-features/about-status-checks)
   * See [klmcwhirter/envycontrol#tests](https://github.com/klmcwhirter/envycontrol/tree/tests) for potential starting point
 * Support Python >= 3.10
-* Package as a zip file with `envycontrol` wrapper shell script to maintain current interface
+* Distribute as a Python package with `envycontrol` wrapper shell script to maintain current interface
 * Adopt github actions for CI/CD pipeline
   * [Using scripts to test your code on a runner](https://docs.github.com/en/actions/examples/using-scripts-to-test-your-code-on-a-runner)
   * [About packaging with GitHub Actions](https://docs.github.com/en/actions/publishing-packages/about-packaging-with-github-actions)
@@ -29,7 +38,7 @@
   * use unpacking instead of positional parameters to simplifying calling functions
   * usage of "walrus operator" as appropriate - [3.8 assignment expressions](https://docs.python.org/3/whatsnew/3.8.html#assignment-expressions)
   * custom generic contextmanagers that ease the coding of file creation operations
-* Refactor as a package (note can be numdled as a zip file to keep 'single file delivery')
+* Refactor as a package (note can be bundled as a zip file to keep 'single file delivery')
 * Refactor to construct "context" class that collects data prior to emitting file changes
   * provides mechanism to override values as analysis steps proceed.
   * output process simply emits stuff from context
@@ -40,6 +49,7 @@
 * Add customizable envycontrol rules for state transitions between Optimus modes
   * this should allow users to add / remove files to change / delete instead of them being hard coded
   * allow for elegant per-display-manager customizations via separate dir per display-manager
+  * envycontrol rules files to use paths to templates - allows to easily remap for other display-manager
   * [#145 - Runit?](https://github.com/bayasdev/envycontrol/issues/145) - eliminates the need for [ToneyFoxxy's](https://github.com/ToneyFoxxy/ToneyFoxxy-EnvyControl-Without-SystemD) cusomizations
   * [#141 - Please make it init agnostic](https://github.com/bayasdev/envycontrol/issues/141)
 * [#113 - nvidia only mode by integrating with NVX](https://github.com/bayasdev/envycontrol/issues/113)
