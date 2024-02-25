@@ -214,10 +214,10 @@ RTD3_MODES = [0, 1, 2, 3]
 # end constants definition
 
 
-def graphics_mode_switcher(graphics_mode, user_display_manager, enable_force_comp, coolbits_value, rtd3_value, use_nvidia_current, **kwargs):
-    print(f"Switching to {graphics_mode} mode")
+def graphics_mode_switcher(*, switch, dm, force_comp, coolbits, rtd3, use_nvidia_current, **kwargs):
+    print(f"Switching to {switch} mode")
 
-    if graphics_mode == 'integrated':
+    if switch == 'integrated':
 
         if logging.getLogger().level == logging.DEBUG:
             service = subprocess.run(
@@ -240,9 +240,9 @@ def graphics_mode_switcher(graphics_mode, user_display_manager, enable_force_com
         create_file(UDEV_INTEGRATED_PATH, UDEV_INTEGRATED)
 
         rebuild_initramfs()
-    elif graphics_mode == 'hybrid':
+    elif switch == 'hybrid':
         print(
-            f"Enable PCI-Express Runtime D3 (RTD3) Power Management: {rtd3_value or False}")
+            f"Enable PCI-Express Runtime D3 (RTD3) Power Management: {rtd3 or False}")
         cleanup()
 
         if logging.getLogger().level == logging.DEBUG:
@@ -257,7 +257,7 @@ def graphics_mode_switcher(graphics_mode, user_display_manager, enable_force_com
         else:
             logging.error("An error ocurred while enabling service")
 
-        if rtd3_value == None:
+        if rtd3 == None:
             if use_nvidia_current:
                 create_file(MODESET_PATH, MODESET_CURRENT_CONTENT)
             else:
@@ -266,15 +266,15 @@ def graphics_mode_switcher(graphics_mode, user_display_manager, enable_force_com
             # setup rtd3
             if use_nvidia_current:
                 create_file(
-                    MODESET_PATH, MODESET_CURRENT_RTD3.format(rtd3_value))
+                    MODESET_PATH, MODESET_CURRENT_RTD3.format(rtd3))
             else:
-                create_file(MODESET_PATH, MODESET_RTD3.format(rtd3_value))
+                create_file(MODESET_PATH, MODESET_RTD3.format(rtd3))
             create_file(UDEV_PM_PATH, UDEV_PM_CONTENT)
 
         rebuild_initramfs()
-    elif graphics_mode == 'nvidia':
-        print(f"Enable ForceCompositionPipeline: {enable_force_comp}")
-        print(f"Enable Coolbits: {coolbits_value or False}")
+    elif switch == 'nvidia':
+        print(f"Enable ForceCompositionPipeline: {force_comp}")
+        print(f"Enable Coolbits: {coolbits or False}")
 
         if logging.getLogger().level == logging.DEBUG:
             service = subprocess.run(
@@ -308,21 +308,21 @@ def graphics_mode_switcher(graphics_mode, user_display_manager, enable_force_com
             create_file(MODESET_PATH, MODESET_CONTENT)
 
         # extra Xorg config
-        if enable_force_comp and coolbits_value != None:
+        if force_comp and coolbits != None:
             create_file(EXTRA_XORG_PATH, EXTRA_XORG_CONTENT + FORCE_COMP +
-                        COOLBITS.format(coolbits_value) + 'EndSection\n')
-        elif enable_force_comp:
+                        COOLBITS.format(coolbits) + 'EndSection\n')
+        elif force_comp:
             create_file(EXTRA_XORG_PATH, EXTRA_XORG_CONTENT +
                         FORCE_COMP + 'EndSection\n')
-        elif coolbits_value != None:
+        elif coolbits != None:
             create_file(EXTRA_XORG_PATH, EXTRA_XORG_CONTENT +
-                        COOLBITS.format(coolbits_value) + 'EndSection\n')
+                        COOLBITS.format(coolbits) + 'EndSection\n')
 
         # try to detect the display manager if not provided
-        if user_display_manager == None:
+        if dm == None:
             display_manager = get_display_manager()
         else:
-            display_manager = user_display_manager
+            display_manager = dm
 
         # only sddm and lightdm require further config
         if display_manager == 'sddm':
@@ -579,7 +579,7 @@ def main():
         with CachedConfig(args).adapter() as adapter:
             if args.switch:
                 assert_root()
-                graphics_mode_switcher(**adapter.app_args)
+                graphics_mode_switcher(**vars(adapter.app_args))
             elif args.reset_sddm:
                 assert_root()
                 create_file(SDDM_XSETUP_PATH, SDDM_XSETUP_CONTENT, True)

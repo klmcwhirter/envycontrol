@@ -32,6 +32,7 @@ def pytest_configure(config):
 
 
 def pytest_collection_modifyitems(session, config, items):
+    print()
     print(f'pytest.mark.{curr_mode} in force')
     if is_root():
         print('pytest.mark.root in force')
@@ -49,7 +50,7 @@ def try_skip(item):
             # {mode} in force: do not skip mode tests
             pass
         else:
-            skip_mode = pytest.mark.skip(reason=f'needs pytest.mark.{mode} to run; current_mode={curr_mode}')
+            skip_mode = pytest.mark.skip(reason=f'needs "Optimus mode"={mode} to run; current_mode={curr_mode}')
             item.add_marker(skip_mode)
 
     if not is_root():
