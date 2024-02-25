@@ -1,10 +1,34 @@
 
 import json
 import sys
+from argparse import Namespace
+from typing import Any
 
 import pytest
 
-from envycontrol import CACHE_FILE_PATH, main
+from envycontrol import CACHE_FILE_PATH, CachedConfig, main
+
+
+def test_create_cache_obj__constructs_structure() -> None:
+    # for vars() support -- mimic envycontrol parse_args ouytput
+    args = Namespace(**{
+        "query": False,
+        "switch": "nvidia",
+        "dm": None,
+        "force_comp": True,
+        "coolbits": None,
+        "rtd3": None,
+        "use_nvidia_current": True,
+        "reset_sddm": False,
+        "reset": False,
+        "cache_create": False,
+        "cache_delete": False,
+        "cache_query": False,
+        "verbose": False
+    })
+    cache = CachedConfig(args)
+    cache_dict = cache.create_cache_obj('PCI:3:3:3')
+    validate_cache_dict_structure(cache_dict)
 
 
 @pytest.mark.parametrize([], [pytest.param(marks=[pytest.mark.integrated, pytest.mark.root])])
@@ -30,6 +54,12 @@ def test_cache_create__does_create_file():
 
     cache_dict = json.loads(content)
 
+    validate_cache_dict_structure(cache_dict)
+
+    assert 'hybrid' == cache_dict['metadata']['current_mode']
+
+
+def validate_cache_dict_structure(cache_dict: dict[str, Any]) -> None:
     # region switch
 
     assert 'switch' in cache_dict
@@ -57,8 +87,6 @@ def test_cache_create__does_create_file():
         if not exists:
             print(f'ERROR: {metadata} is missing')
     assert all(exists for exists, _ in results), 'missing metadata'
-
-    assert 'hybrid' == cache_dict['metadata']['current_mode']
 
     # endregion
 
