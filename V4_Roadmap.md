@@ -28,6 +28,7 @@
   * [About packaging with GitHub Actions](https://docs.github.com/en/actions/publishing-packages/about-packaging-with-github-actions)
   * Not Python, but ... [Publishing Node.js packages](https://docs.github.com/en/actions/publishing-packages/publishing-nodejs-packages)
   * [marketplace/actions/pypi-publish](https://github.com/marketplace/actions/pypi-publish)
+  * [flake.nix version](https://github.com/bayasdev/envycontrol/pull/156) - make version dynamic from github action 
 * WHAT ELSE?
 
 ### Envycontrol Enhancements
