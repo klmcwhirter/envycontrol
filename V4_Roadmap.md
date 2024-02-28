@@ -5,17 +5,18 @@
 ## Goals
 
 * General technology refresh
-* Automated CI/CD pipeline
-  * including test bed with up to 50% coverage
 * Redesign for ease of customization, system stability assurance
   * simple enough design for maintainability
+  * rely on stdlib only (e.g., json and not yaml)
 * Address enhancements / bugs from backlog as appropriate
+* Automated CI/CD pipeline
+  * including test bed with up to 50% coverage
 
 ## Items to Consider
 
 ### Project Enhancements
 
-* Adopt [pdm]() usage for testing, packaging and publishing
+* Adopt [pdm](https://pdm-project.org/latest/) usage for testing, packaging and publishing
 * Adopt project structure as created by [`pdm init`](https://pdm-project.org/latest/usage/project/#new-project)
 * Adopt guidance from the new [Python Packaging User Guide](https://packaging.python.org/en/latest/)
 * Adopt [pytest](https://docs.pytest.org/en/stable/) for unit and integration testing
@@ -45,14 +46,23 @@
   * output process simply emits stuff from context
 * Move file content constants to "templates" that can be customized by users
   * note that delivered templates will be in "envycontrol/src/templates/" directory
-  * customized versions will be in "/etc/envycontrol/templates/" or "~/.config/envycontrol/templates/" directory
+  * customized versions will be in "/etc/envycontrol/templates/" directory
   * this should address issues like [#34](https://github.com/bayasdev/envycontrol/issues/34) and maybe [#142](https://github.com/bayasdev/envycontrol/issues/142) to the extent that the user can put in place guidance they receive from the community
 * Add customizable envycontrol rules for state transitions between Optimus modes
-  * this should allow users to add / remove files to change / delete instead of them being hard coded
+  * these are envycontrol rules NOT udev rules - Python code modules
   * allow for elegant per-display-manager customizations via separate dir per display-manager
-  * envycontrol rules files to use paths to templates - allows to easily remap for other display-manager
-  * [#145 - Runit?](https://github.com/bayasdev/envycontrol/issues/145) - eliminates the need for [ToneyFoxxy's](https://github.com/ToneyFoxxy/ToneyFoxxy-EnvyControl-Without-SystemD) cusomizations
+  * envycontrol rules files to use paths to template files - allows to easily remap for different display-managers
+  * this should allow users to add / remove files to change / delete instead of them being hard coded
   * [#141 - Please make it init agnostic](https://github.com/bayasdev/envycontrol/issues/141)
+  * [#145 - Runit?](https://github.com/bayasdev/envycontrol/issues/145) - eliminates the need for [ToneyFoxxy's](https://github.com/ToneyFoxxy/ToneyFoxxy-EnvyControl-Without-SystemD) customizations
+* Add custom profiles to simplify command lines:
+  * envycontrol --profile my_hybrid ==> `envycontrol --switch hybrid --rtd3 1`
+  * envycontrol --profile my_nvidia ==> `envycontrol --switch nvidia --force-comp --coolbits 24 --dm sddm --use-nvidia-current`
+* While researching which of the 3 methods to use to install the nvidia drivers on Fedora 39, I ran into this video.
+  * [The Linux Experiment - NVIDIA on Linux is WAY BETTER than everyone says, but...](https://youtu.be/9f4B8uIPqcE)
+  * Wayland support is MUCH better on modern Linux kernels and 30 series and up cards.
+  * **Do we need a level of abstraction to model the different card families** so that different actions can be taken?
+  * What would that look like?
 * [#113 - nvidia only mode by integrating with NVX](https://github.com/bayasdev/envycontrol/issues/113)
 * [#147 - Can't use NVENC in hybrid mode, can use just in resetted mode](https://github.com/bayasdev/envycontrol/issues/147)
 * WHAT ELSE?
@@ -65,3 +75,54 @@
 ## Timeline
 
 TBD
+
+## Deployment Model
+```
+/etc/envycontrol/
+    profiles/*.json           # custom profiles with pre-filled command line options
+    rules/**/*.py             # customized rules; deployment does not touch these
+    templates/**/*            # customized template text files; deployment does not touch these
+
+/var/cache/envycontrol/       # cache directory
+    system/                   # location to backup original system files modified; put back upon `reset all` operation
+                              # file names as full path with '/' chars replaced with '$' (some sentinel char TBD)
+    cache.json
+
+/usr/local/sbin/envycontrol   # wrapper sh script
+
+/usr/local/share/envycontrol/ # ENVYCONTROL_HOME deployed Python package
+    profiles/*.json           # deployed profiles with pre-filled command line options
+    rules/**/*.py             # deployed rules; these are upgraded with each release
+    templates/**/*            # deployed template text files; these are upgraded with each release
+```
+
+## Command Line Interface
+
+```
+envycontrol 4.x.x - switch between GPU modes on Nvidia Optimus systems
+
+  [ORIG_OPTS]       Retain original options for backward compatibility
+
+
+  Verb-based interface *NEW*
+  --------------------------
+
+  switch [MODE]     Where MODE is integrated, hybrid or nvidia; e.g., `envycontrol switch integrated`
+    profile [NAME]  Perform switch based on values in ENVYCONTROL_ETC/profiles/NAME.json or ENVYCONTROL_HOME/profiles/NAME.json
+                    E.g., `envycontrol switch profile my_nvidia`
+    [OPTS]          Allow any available non-verb options; these override values in profile used if any
+                    E.g., `envycontrol switch profile my_hybrid --rtd3 0`
+                    E.g., `envycontrol switch hybrid --rtd3 1`
+
+  profile [NAME]
+    copy [TO_NAME]  Copy profile from ENVYCONTROL_HOME/profiles/NAME.json to ENVYCONTROL_ETC/profiles/TO_NAME.json
+
+  cache
+    create [OPTS]   Creates cache file with OPTS as args
+    delete          Deletes cache file
+    show            Dumps cache file to stdout
+
+  reset
+    all             Undo all system modifications and rebuild initramfs
+    sddm            Redo sddm specific modifications
+```

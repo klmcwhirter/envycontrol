@@ -14,26 +14,29 @@ def test_mode_is_hybrid():
 
 
 @pytest.fixture
-def hybrid_files() -> list[str]:
-    return [
-        MODESET_PATH,
-        # UDEV_PM_PATH,  # only if rtd3
-        CACHE_FILE_PATH,
-    ]
+def hybrid_files():
+    def wrapper(rtd3: bool) -> list[str]:
+        rc = [
+            MODESET_PATH,
+            CACHE_FILE_PATH,
+        ]
+        if rtd3:
+            rc.append(UDEV_PM_PATH)
+        return rc
+    return wrapper
 
 
 @pytest.mark.hybrid
-def test_hybrid_should_remove_expected(files_to_remove: list[str], hybrid_files: list[str]) -> None:
-    expected_to_remove = [f for f in files_to_remove if f not in hybrid_files]
+def test_hybrid_should_remove_expected(files_to_remove: list[str], hybrid_files, is_rtd3) -> None:
+    expected_to_remove = [f for f in files_to_remove if f not in hybrid_files(is_rtd3)]
 
     for f in expected_to_remove:
         assert not os.path.exists(f)
 
 
 @pytest.mark.hybrid
-def test_hybrid_should_create_expected(hybrid_files: list[str]) -> None:
-
-    rc = [*map(lambda f: (os.path.exists(f), f), hybrid_files)]
+def test_hybrid_should_create_expected(hybrid_files, is_rtd3) -> None:
+    rc = [*map(lambda f: (os.path.exists(f), f), hybrid_files(is_rtd3))]
 
     should_assert = False
     for r in rc:

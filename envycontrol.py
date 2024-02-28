@@ -241,8 +241,7 @@ def graphics_mode_switcher(*, switch, dm, force_comp, coolbits, rtd3, use_nvidia
 
         rebuild_initramfs()
     elif switch == 'hybrid':
-        print(
-            f"Enable PCI-Express Runtime D3 (RTD3) Power Management: {rtd3 or False}")
+        print(f"Enable PCI-Express Runtime D3 (RTD3) Power Management: {rtd3 or False}")
         cleanup()
 
         if logging.getLogger().level == logging.DEBUG:
@@ -441,8 +440,7 @@ def generate_xrandr_script(igpu_vendor):
 
 def get_amd_igpu_name():
     if not os.path.exists('/usr/bin/xrandr'):
-        logging.warning(
-            "The 'xrandr' command is not available. Make sure the package is installed!")
+        logging.warning("The 'xrandr' command is not available. Make sure the package is installed!")
         return None
 
     try:
@@ -617,8 +615,7 @@ class CachedConfig:
 
     def create_cache_file(self):
         if not self.is_hybrid():
-            raise ValueError(
-                '--cache-create requires that the system be in the hybrid Optimus mode')
+            raise ValueError('--cache-create requires that the system be in the hybrid Optimus mode')
 
         self.nvidia_gpu_pci_bus = get_nvidia_gpu_pci_bus()
         self.obj = self.create_cache_obj(self.nvidia_gpu_pci_bus)
@@ -665,8 +662,7 @@ class CachedConfig:
         elif self.is_hybrid():
             self.nvidia_gpu_pci_bus = get_nvidia_gpu_pci_bus()
         else:
-            raise ValueError(
-                'No cache present.Operation requires that the system be in the hybrid Optimus mode')
+            raise ValueError('No cache present. Operation requires that the system be in the hybrid Optimus mode')
 
     @staticmethod
     def show_cache_file():

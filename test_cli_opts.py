@@ -9,26 +9,30 @@ import pytest
 from envycontrol import CACHE_FILE_PATH, CachedConfig, main
 
 
+@pytest.mark.slow
 def test_create_cache_obj__constructs_structure() -> None:
-    # for vars() support -- mimic envycontrol parse_args ouytput
+    nvidia_gpu_pci_bus = 'PCI:3:3:3'
+    # for vars() support -- mimic envycontrol parse_args output
     args = Namespace(**{
-        "query": False,
-        "switch": "nvidia",
-        "dm": None,
-        "force_comp": True,
-        "coolbits": None,
-        "rtd3": None,
-        "use_nvidia_current": True,
-        "reset_sddm": False,
-        "reset": False,
-        "cache_create": False,
-        "cache_delete": False,
-        "cache_query": False,
-        "verbose": False
+        'query': False,
+        'switch': 'nvidia',
+        'dm': None,
+        'force_comp': True,
+        'coolbits': None,
+        'rtd3': None,
+        'use_nvidia_current': True,
+        'reset_sddm': False,
+        'reset': False,
+        'cache_create': False,
+        'cache_delete': False,
+        'cache_query': False,
+        'verbose': False
     })
     cache = CachedConfig(args)
-    cache_dict = cache.create_cache_obj('PCI:3:3:3')
+    cache_dict = cache.create_cache_obj(nvidia_gpu_pci_bus=nvidia_gpu_pci_bus)
     validate_cache_dict_structure(cache_dict)
+
+    assert nvidia_gpu_pci_bus == cache_dict['switch']['nvidia_gpu_pci_bus']
 
 
 @pytest.mark.parametrize([], [pytest.param(marks=[pytest.mark.integrated, pytest.mark.root])])
