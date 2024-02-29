@@ -307,10 +307,10 @@ def graphics_mode_switcher(*, switch, dm, force_comp, coolbits, rtd3, use_nvidia
             create_file(MODESET_PATH, MODESET_CONTENT)
 
         # extra Xorg config
-        if force_comp and coolbits != None:
+        if force_comp is not None and coolbits is not None:
             create_file(EXTRA_XORG_PATH, EXTRA_XORG_CONTENT + FORCE_COMP +
                         COOLBITS.format(coolbits) + 'EndSection\n')
-        elif force_comp:
+        elif force_comp is not None:
             create_file(EXTRA_XORG_PATH, EXTRA_XORG_CONTENT +
                         FORCE_COMP + 'EndSection\n')
         elif coolbits != None:
@@ -599,13 +599,15 @@ class CachedConfig:
 
     @contextmanager
     def adapter(self):
+        global get_igpu_bus_pci_bus
         global get_nvidia_gpu_pci_bus
         use_cache = os.path.exists(CACHE_FILE_PATH)
 
         if use_cache:
             self.read_cache_file()  # might not be in hybrid mode
 
-            # rebind function to use cached value instead of detection
+            # rebind functions to use cached value instead of detection
+            get_igpu_bus_pci_bus = self.get_igpu_pci_bus
             get_nvidia_gpu_pci_bus = self.get_nvidia_gpu_pci_bus
 
         if self.is_hybrid():  # recreate cache file when in hybrid mode
@@ -641,6 +643,9 @@ class CachedConfig:
     def is_hybrid(self):
         return 'hybrid' == self.current_mode
 
+    def get_igpu_pci_bus(self):
+        return self.igpu_pci_bus
+
     def get_nvidia_gpu_pci_bus(self):
         return self.nvidia_gpu_pci_bus
 
@@ -658,6 +663,7 @@ class CachedConfig:
             with open(CACHE_FILE_PATH, 'r', encoding='utf-8') as f:
                 content = f.read()
             self.obj = loads(content)
+            self.igpu_pci_bus = self.obj['metadata']['igpu_pci_bus']
             self.nvidia_gpu_pci_bus = self.obj['switch']['nvidia_gpu_pci_bus']
         elif self.is_hybrid():
             self.nvidia_gpu_pci_bus = get_nvidia_gpu_pci_bus()
@@ -678,6 +684,8 @@ class CachedConfig:
 
         with open(CACHE_FILE_PATH, 'w', encoding='utf-8') as f:
             dump(self.obj, fp=f, indent=4, sort_keys=False)
+        if logging.getLogger().level == logging.DEBUG:
+            print(f'INFO: created {CACHE_FILE_PATH}')
 
 
 def get_current_mode():

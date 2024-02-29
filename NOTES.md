@@ -4,7 +4,9 @@
 * more tests!
 * set version # - 3.4.0 ?
 * validate cached value when switch to nvidia mode
-  * fallback to detection if no longer valid (did the user get a new card and is installed in a new spot on the bus?)
+  * fallback to detection if no longer valid (did the user get a new card and is installed in a new spot on the bus? unlikely)
+  * what else can be done?
+* For /etc/modprobe.d/nvidia.conf sometimes the entries are surrounded with quotes and sometimes not. See MODESET_RTD3 for example. Is there a reason why?
 
 ## cmd snippets
 * lspci | grep 'VGA compatible controller'
