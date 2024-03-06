@@ -593,7 +593,8 @@ def main():
                 assert_root()
                 cleanup()
                 CachedConfig.delete_cache_file()
-                rebuild_initramfs()
+                CachedConfig.delete_no_nvidia()
+                # rebuild_initramfs()
                 print('Operation completed successfully')
 
 
@@ -665,6 +666,13 @@ class CachedConfig:
         os.removedirs(os.path.dirname(CACHE_FILE_PATH))
         logging.debug(f'Removed {CACHE_FILE_PATH}')
 
+    NO_NVIDIA_TMPFILE = '/etc/tmpfiles.d/acer_no_gpu.conf'
+
+    @staticmethod
+    def delete_no_nvidia():
+        os.remove(CachedConfig.NO_NVIDIA_TMPFILE)
+        logging.debug(f'Removed {CachedConfig.NO_NVIDIA_TMPFILE}')
+
     def read_cache_file(self):
         from json import loads
         if os.path.exists(CACHE_FILE_PATH):
@@ -697,7 +705,6 @@ class CachedConfig:
 
     def write_no_nvidia(self):
         # see find /sys/devices -name '0000:01:00*'
-        acer_tmpfile = '/etc/tmpfiles.d/acer_no_gpu.conf'
         tmpfile_content = [
             'w /sys/devices/pci0000:00/0000:00:01.0/0000:01:00.0/remove - - - - 1\n',
             'w /sys/devices/pci0000:00/0000:00:01.0/0000:01:00.1/remove - - - - 1\n',
@@ -705,9 +712,9 @@ class CachedConfig:
             'f /run/no-nvidia/in-effect 0644 klmcw klmcw - 1\n'
             '\n'
         ]
-        with open(acer_tmpfile, 'w') as f:
+        with open(CachedConfig.NO_NVIDIA_TMPFILE, 'w') as f:
             f.writelines(tmpfile_content)
-        logging.debug(f'Created {acer_tmpfile}')
+        logging.debug(f'Created {CachedConfig.NO_NVIDIA_TMPFILE}')
 
 
 def get_current_mode():
