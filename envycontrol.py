@@ -580,7 +580,7 @@ def main():
                 cleanup()
                 adapter.write_no_nvidia()
                 CachedConfig.delete_cache_file()
-                rebuild_initramfs()
+                # rebuild_initramfs()
                 print('Operation completed successfully')
             elif args.switch:
                 assert_root()
@@ -696,15 +696,17 @@ class CachedConfig:
         logging.debug(f'Created {CACHE_FILE_PATH}')
 
     def write_no_nvidia(self):
+        # see find /sys/devices -name '0000:01:00*'
         acer_tmpfile = '/etc/tmpfiles.d/acer_no_gpu.conf'
         tmpfile_content = [
-            'w /sys/devices/pci0000:00/0000:00:01.0/0000:01:00.0/remove - - - - 1',
-            'w /sys/devices/pci0000:00/0000:00:01.0/0000:01:00.1/remove - - - - 1',
-            ''
+            'w /sys/devices/pci0000:00/0000:00:01.0/0000:01:00.0/remove - - - - 1\n',
+            'w /sys/devices/pci0000:00/0000:00:01.0/0000:01:00.1/remove - - - - 1\n',
+            'd /run/no-nvidia 0755 klmcw klmcw\n',
+            'f /run/no-nvidia/in-effect 0644 klmcw klmcw - 1\n'
+            '\n'
         ]
         with open(acer_tmpfile, 'w') as f:
             f.writelines(tmpfile_content)
-            f.write('\n')
         logging.debug(f'Created {acer_tmpfile}')
 
 

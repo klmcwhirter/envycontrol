@@ -7,6 +7,7 @@
   - [Optional: Actually secure boot on Fedora](https://blog.nil.im/?7a)
   - [Optional - Actually secure boot on Fedora 39](https://blog.nil.im/?80)
 * [tmpfiles.d man page](https://www.freedesktop.org/software/systemd/man/latest/tmpfiles.d.html)
+* [Configuration of Temporary Files with systemd-tmpfiles](https://www.baeldung.com/linux/systemd-tmpfiles-configure-temporary-files)
 
 ### New supported mode - no-nvidia
 
