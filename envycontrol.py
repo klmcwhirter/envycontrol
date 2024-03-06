@@ -207,7 +207,7 @@ xrandr --setprovideroutputsource "{}" NVIDIA-0
 xrandr --auto
 '''
 
-SUPPORTED_MODES = ['integrated', 'hybrid', 'nvidia']
+SUPPORTED_MODES = ['integrated', 'hybrid', 'nvidia', 'no-nvidia']
 SUPPORTED_DISPLAY_MANAGERS = ['gdm', 'gdm3', 'sddm', 'lightdm']
 RTD3_MODES = [0, 1, 2, 3]
 
@@ -575,7 +575,14 @@ def main():
 
     if args.switch or args.reset_sddm or args.reset:
         with CachedConfig(args).adapter() as adapter:
-            if args.switch:
+            if args.switch == 'no-nvidia':
+                assert_root()
+                cleanup()
+                adapter.write_no_nvidia()
+                CachedConfig.delete_cache_file()
+                rebuild_initramfs()
+                print('Operation completed successfully')
+            elif args.switch:
                 assert_root()
                 graphics_mode_switcher(**vars(adapter.app_args))
             elif args.reset_sddm:
@@ -684,8 +691,19 @@ class CachedConfig:
 
         with open(CACHE_FILE_PATH, 'w', encoding='utf-8') as f:
             dump(self.obj, fp=f, indent=4, sort_keys=False)
+            f.write('\n')
         if logging.getLogger().level == logging.DEBUG:
             print(f'INFO: created {CACHE_FILE_PATH}')
+
+    def write_no_nvidia(self):
+        acer_tmpfile = '/etc/tmpfiles.d/acer_no_gpu.conf'
+        tmpfile_content = [
+            'w /sys/devices/pci0000:00/0000:00:01.0/0000:01:00.0/remove - - - - 1',
+            'w /sys/devices/pci0000:00/0000:00:01.0/0000:01:00.1/remove - - - - 1',
+            ''
+        ]
+        with open(acer_tmpfile, 'w') as f:
+            f.writelines(acer_tmpfile)
 
 
 def get_current_mode():
