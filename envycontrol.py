@@ -663,6 +663,7 @@ class CachedConfig:
     def delete_cache_file():
         os.remove(CACHE_FILE_PATH)
         os.removedirs(os.path.dirname(CACHE_FILE_PATH))
+        logging.debug(f'Removed {CACHE_FILE_PATH}')
 
     def read_cache_file(self):
         from json import loads
@@ -692,8 +693,7 @@ class CachedConfig:
         with open(CACHE_FILE_PATH, 'w', encoding='utf-8') as f:
             dump(self.obj, fp=f, indent=4, sort_keys=False)
             f.write('\n')
-        if logging.getLogger().level == logging.DEBUG:
-            print(f'INFO: created {CACHE_FILE_PATH}')
+        logging.debug(f'Created {CACHE_FILE_PATH}')
 
     def write_no_nvidia(self):
         acer_tmpfile = '/etc/tmpfiles.d/acer_no_gpu.conf'
@@ -703,7 +703,9 @@ class CachedConfig:
             ''
         ]
         with open(acer_tmpfile, 'w') as f:
-            f.writelines(acer_tmpfile)
+            f.writelines(tmpfile_content)
+            f.write('\n')
+        logging.debug(f'Created {acer_tmpfile}')
 
 
 def get_current_mode():
