@@ -9,7 +9,7 @@ def test_cache_query_shows_cache_file(capsys) -> None:
     main()
 
     captured = capsys.readouterr()
-    actual = captured.out.strip()
+    actual = captured.out.strip() + '\n\n'
 
     expected = ''
     with open(CACHE_FILE_PATH, 'r', encoding='utf-8') as f:
